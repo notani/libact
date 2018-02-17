@@ -17,17 +17,20 @@ else:
     from Cython.Distutils import build_ext
     import numpy
     import numpy.distutils
+    include_dirs = numpy.distutils.misc_util.get_numpy_include_dirs()
     if sys.platform == 'darwin':
         print("Platform Detection: Mac OS X. Link to openblas...")
         extra_link_args = ['-L/usr/local/opt/openblas/lib -lopenblas']
-        include_dirs = (numpy.distutils.misc_util.get_numpy_include_dirs() +
-                        ['/usr/local/opt/openblas/include'])
+        include_dirs.append('/usr/local/opt/openblas/include')
+        if 'CONDA_PREFIX' in os.environ:
+            include_dirs.append(os.path.join(os.environ['CONDA_PREFIX'], 'include'))
     else:
         # assume linux otherwise, unless we support Windows in the future...
         print("Platform Detection: Linux. Link to liblapacke...")
         extra_link_args = ['-llapacke -llapack -lblas']
-        include_dirs = (numpy.distutils.misc_util.get_numpy_include_dirs() +
-                        ['/usr/include/lapacke'])
+        include_dirs.append('/usr/include/lapacke')
+        if 'CONDA_PREFIX' in os.environ:
+            include_dirs.append(os.path.join(os.environ['CONDA_PREFIX'], 'include'))
 
     extensions = cythonize([
         Extension(
